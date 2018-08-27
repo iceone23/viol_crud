@@ -138,8 +138,10 @@
                   <b-col class="text-left" sm="6"><b-form-file v-model="inputFile"
                                              accept=".docx, .doc, .pdf"
                                              ref="inpF"
-                                             @change="inputFileSelected"></b-form-file>
+                                             @change="inputFileSelected"
+                                             name="inputFile"></b-form-file>
                   </b-col>
+                  <b-col sm="2">Не працює</b-col>
                 </b-row>
                 <b-row class="mb-4">
                   <b-col>
@@ -154,8 +156,10 @@
                   <b-col class="text-left" sm="6"><b-form-file v-model="outputFile"
                                              accept=".docx, .doc, .pdf"
                                              ref="outF"
-                                             @change="outputFileSelected"></b-form-file>
+                                             @change="outputFileSelected"
+                                             name="sourceFile"></b-form-file>
                   </b-col>
+                  <b-col sm="2">Не працює</b-col>
                 </b-row>
                 <b-row class="mb-4">
                   <b-col>

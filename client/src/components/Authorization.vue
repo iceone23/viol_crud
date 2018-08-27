@@ -34,7 +34,7 @@
 
               </b-form-checkbox-group>
             </b-form-group>
-            <b-button type="submit" variant="primary" class="but">Вхід</b-button>
+            <b-button href="/violations" type="submit" variant="primary" class="but">Вхід</b-button>
           </b-form>
       </b-col>
       <b-col sm="4"></b-col>

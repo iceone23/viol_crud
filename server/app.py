@@ -1,6 +1,8 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_pymongo import PyMongo
+from flask_jwt_extended import JWTManager
+from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, jwt_refresh_token_required, get_jwt_identity, get_raw_jwt)
 import uuid
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -10,37 +12,37 @@ DEBUG = True
 # instantiate the app
 app = Flask(__name__)
 app.config.from_object(__name__)
-
-#jwt = JWTManager(app)
+app.config['JWT_SECRET_KEY'] = 'jwt_secret_key'
 
 #database config
 app.config['MONGO_URI'] = 'mongodb://localhost:27017/violdb'
 
 mongo = PyMongo(app)
+jwt = JWTManager(app)
 violations = mongo.db.violations
 users = mongo.db.users
 # enable CORS
 CORS(app)
 
-
 @app.route('/login', methods=['POST'])
 def login():
-    if not request_is_json:
-        return jsonify({"msg": "Missing JSON in request"}), 400
-    username = request.json.get('username', None)
-    password = request.json.get('password', None)
-    if not username:
-        return jsonify({"msg": "Missing username parameter"}), 400
-    if not password:
-        return jsonify({"msg": "Missing password parameter"}), 400
+    data = request.get_json()
+    current_user = users.find_one({'login' : data['login']})
 
-    if username != 'test' or password != 'test':
-        return jsonify({"msg": "Bad username or password"}), 401
-
-    access_token = create_access_token(identity=username)
-    return jsonify(access_token=access_token), 200
+    if not current_user:
+        return {'message' : 'User ' + data['login'] + ' does not exist'}
+    
+    if users.check_password_hash(data['password'], current_user.password):
+        access_token = create_access_token(identity = data['username'])
+        refresh_token = create_refresh_token(identity = data['username'])
+        return {
+            'message' : 'User has successfuly login',
+            'access_token' : access_token,
+            'refresh_token' : refresh_token
+        }
 
 @app.route('/users', methods=['GET'])
+#@jwt_required 
 def getAll_users():
     output = []
     for q in users.find():
@@ -49,6 +51,7 @@ def getAll_users():
     return jsonify({'users': output})
 
 @app.route('/user/<public_id>', methods=['GET'])
+#@jwt_required 
 def get_user(public_id):
     user = users.find_one({'public_id' : public_id})
     if not user:
@@ -58,6 +61,7 @@ def get_user(public_id):
     return jsonify({'user' : user_data})
 
 @app.route('/user/<public_id>', methods=['DELETE'])
+#@jwt_required 
 def delete_user(public_id):
     user = users.delete_one({'public_id' : public_id})
     if not user:
@@ -66,6 +70,7 @@ def delete_user(public_id):
     return jsonify({'message' : 'User has been deleted'})
 
 @app.route('/user/<public_id>', methods=['PUT'])
+#@jwt_required 
 def edit_user(public_id):
     data = request.get_json()
 
@@ -78,16 +83,20 @@ def edit_user(public_id):
         return jsonify({'message' : 'No users found!'})
 
 @app.route('/user', methods=['POST'])
+#@jwt_required 
 def create_user():
     data = request.get_json()
 
     hashed_pass = generate_password_hash(data['password'], method='sha256')
-
-    users.insert_one({"public_id": str(uuid.uuid4()), "name": data['name'], "password": hashed_pass,
+    if users.find_one({'login' : data['login']}):
+        return jsonify({'message' : 'User ' + data['login'] + ' already exist'})
+    else:
+        users.insert_one({"public_id": str(uuid.uuid4()), "name": data['name'], "password": hashed_pass,
                       "login": data['login'], "admin": False})
-    return jsonify({'message' : 'New user created'})
+        return jsonify({'message' : 'New user created'})
 
 @app.route('/violations', methods=['GET'])
+#@jwt_required 
 def all_violations():
 
     output = []
@@ -100,6 +109,7 @@ def all_violations():
     return jsonify({ 'data': output})
 
 @app.route('/violation_delete/<data_index>', methods=['DELETE'])
+#@jwt_required 
 def delete_violation(data_index):
     if violations.find_one({"public_id": data_index}):
         violations.delete_one({"public_id" : data_index})
@@ -108,6 +118,7 @@ def delete_violation(data_index):
         return jsonify({'message': 'No violation found!'})
 
 @app.route('/violation_edit/<data_index>', methods=['PUT'])
+#@jwt_required 
 def edit_violation(data_index):
     data = request.get_json()
 
@@ -124,6 +135,7 @@ def edit_violation(data_index):
         return jsonify({'message' : 'No violations found!'})
 
 @app.route('/violation_new', methods=['POST'])
+#@jwt_required 
 def add_violation():
     date = request.json['date']
     whoFound = request.json['whoFound']
@@ -138,6 +150,8 @@ def add_violation():
     volumeInf = request.json['volumeInf']
     sourceDoc = request.json['sourceDoc']
     incomeDoc = request.json['incomeDoc']
+    #sourceFile = request.files['sourceFile']
+    #incomeFile = request.files['incomeFile']
 
     id = str(uuid.uuid4())
 
@@ -146,8 +160,18 @@ def add_violation():
                 "deslocation" : deslocation, "subordinate" : subordinate, "normDoc" : normDoc,
                 "violCont" : violCont, "volumeInf" : volumeInf, "sourceDoc" : sourceDoc,
                 "incomeDoc" : incomeDoc})
-
     return jsonify({'message' : 'violation was added'})
 
+"""@app.route('/upload', methods=['POST'])
+def upload(fileName):
+    with grid_fs.new_file(filename=fileName) as fp:
+        fp.write(request.data)
+        file_id=fp._id
+
+    if grid_fs.find_one(file_id) is not None:
+        return jsonify({'message' : 'file succesful uploaded'})
+    else:
+        return jsonify({'message' : 'file not uploaded'})
+"""
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
