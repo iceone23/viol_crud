@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_pymongo import PyMongo
@@ -32,7 +33,7 @@ def login():
     if not current_user:
         return {'message' : 'User ' + data['login'] + ' does not exist'}
     
-    if users.check_password_hash(data['password'], current_user.password):
+'''    if users.check_password_hash(data['password']:
         access_token = create_access_token(identity = data['username'])
         refresh_token = create_refresh_token(identity = data['username'])
         return {
@@ -40,7 +41,7 @@ def login():
             'access_token' : access_token,
             'refresh_token' : refresh_token
         }
-
+'''
 @app.route('/users', methods=['GET'])
 #@jwt_required 
 def getAll_users():
@@ -121,7 +122,7 @@ def delete_violation(data_index):
 #@jwt_required 
 def edit_violation(data_index):
     data = request.get_json()
-
+    data["date"] = datetime.strftime(datetime.strptime(request.json['date'],"%Y-%m-%d"), "%d.%m.%Y")
     if violations.find_one({"public_id" : data_index}):
         violations.update_one({"public_id" : data_index}, {'$set': {"date": data["date"],
             "whoFound": data["whoFound"], "network": data["network"],
@@ -137,7 +138,8 @@ def edit_violation(data_index):
 @app.route('/violation_new', methods=['POST'])
 #@jwt_required 
 def add_violation():
-    date = request.json['date']
+    #convert time to dd.mm.yyyy format
+    date = datetime.strftime(datetime.strptime(request.json['date'],"%Y-%m-%d"), "%d.%m.%Y")
     whoFound = request.json['whoFound']
     network = request.json['network']
     ipAdress = request.json['ipAdress']
@@ -155,6 +157,7 @@ def add_violation():
 
     id = str(uuid.uuid4())
 
+    
     violations.insert_one({"public_id": id, "date": date, "whoFound": whoFound, "network": network,
                 "ipAdress" : ipAdress, "department" : department, "militaryUnit" : militaryUnit,
                 "deslocation" : deslocation, "subordinate" : subordinate, "normDoc" : normDoc,

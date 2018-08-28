@@ -61,26 +61,16 @@ export default {
   },
   computed: {
     loginState() {
-      if (this.form.login.length < 1) {
-        return null;
-      }
-      if (this.form.login.length >= 3) {
+      if (this.form.login.length > 4) {
         return true;
       }
-      if (this.form.login.length < 3) {
-        return false;
-      }
+      return null;
     },
     passwordState() {
-      if (this.form.password.length < 1) {
-        return null;
-      }
       if (this.form.password.length > 4) {
         return true;
       }
-      if (this.form.password.length < 4) {
-        return false;
-      }
+      return null;
     },
   },
   methods: {

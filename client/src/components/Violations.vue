@@ -1,6 +1,6 @@
 <template>
   <b-container fluid>
-    <b-jumbotron header="База даних порушень безпеки інформації">
+    <b-jumbotron header-level="4" header="База даних порушень безпеки інформації">
       <template slot="lead">
         Сумарна кількість правопорушень: <b-badge variant="primary">{{ violationsCount }}</b-badge>
       </template>
@@ -504,14 +504,14 @@ export default {
       this.hideAddModal();
     },
     editViolation(publicId, violation) {
-      const path = 'http://192.168.0.104:5000/violation_edit/' + publicId;
+      const path = `http://192.168.0.104:5000/violation_edit/${publicId}`;
       axios.put(path, violation);
-      this.showAlert('Запис ' + publicId + ' було редаговано', 'warning');
+      this.showAlert(`Запис ${publicId} було редаговано`, 'warning');
       this.hideEditModal();
     },
     removeViolation(publicId, violation) {
-      const path = 'http://192.168.0.104:5000/violation_delete/' + publicId;
-      this.showAlert('Запис ' + publicId + ' видалено', 'danger');
+      const path = `http://192.168.0.104:5000/violation_delete/${publicId}`;
+      this.showAlert(`Запис ${publicId} видалено`, 'danger');
       axios.delete(path);
       this.hideEditModal();
       this.violations.pop(violation);
@@ -555,6 +555,7 @@ export default {
   .jumbotron {
     margin-bottom: 0px;
     padding-top:1px;
+    font-size:14px;
   }
   .container-fluid {
     margin:0px;
