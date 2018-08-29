@@ -1,6 +1,8 @@
 <template>
   <b-container fluid>
-    <b-jumbotron header-level="4" header="База даних порушень безпеки інформації">
+    <h1 class="text-center m-2">База даних порушень безпеки інформації</h1>
+    <h5 class="m-2">Сумарна кількість правопорушень:
+      <b-badge variant="primary">{{ violationsCount }}</b-badge></h5>
       <template slot="lead">
         Сумарна кількість правопорушень: <b-badge variant="primary">{{ violationsCount }}</b-badge>
       </template>
@@ -366,7 +368,6 @@
                 v-model="currentPage"/>
             </b-col>
           </b-row>
-    </b-jumbotron>
   </b-container>
 </template>
 <script>
@@ -551,11 +552,6 @@ export default {
     color:black;
     vertical-align: middle;
     text-align:center;
-  }
-  .jumbotron {
-    margin-bottom: 0px;
-    padding-top:1px;
-    font-size:14px;
   }
   .container-fluid {
     margin:0px;

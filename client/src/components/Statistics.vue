@@ -1,69 +1,69 @@
 <template>
-  <div>
+  <container>
     <h2 class="text-center m-4" >Статистика правопорушень за 2018 рік</h2>
-  </div>
+    <commit-chart :chartData="monthData" :options="commitOptions" :height="100"></commit-chart>
+    <pie-chart :chartData="networkData" :options="networkOptions" :height="100"></pie-chart>
+    <pie-chart :chartData="peopleData" :options="peopleOptions" :height="100"></pie-chart>
+  </container>
 </template>
 
 <script>
 import axios from 'axios';
+import CommitChart from './CommitChart';
+import LineChart from './LineChart';
+import PieChart from './PieChart';
 
 export default {
   name: 'Statistics',
+  components: {
+    'commit-chart': CommitChart,
+    'line-chart': LineChart,
+    'pie-chart': PieChart,
+  },
   data() {
     return {
+      networkData: null,
+      monthData: null,
       violations: [],
-      viol_count: [],
-      month_count: [],
-      networkData: [
-        ['ІСД-інтернет', 'АСУ-дніпро'],
-        ['ІСД-інтернет', 5],
-        ['АСУ-дніпро', 10],
-      ],
+      peopleData: null,
       networkOptions: {
-        title: 'Правопорушення по мережам',
+        title: {
+          display: true,
+          text: 'Pie chart by network',
+          fontSize: 25,
+        },
       },
-      monthData: [
-        ['Month', 'Кількість порушень'],
-        ['січень', 1],
-        ['лютий', 2],
-        ['березень', 3],
-        ['квітень', 4],
-        ['травень', 5],
-        ['червень', 6],
-        ['липень', 7],
-        ['серпень', 8],
-        ['вересень', 9],
-        ['жовтень', 10],
-        ['листопад', 11],
-        ['грудень', 12],
-      ],
-      monthOptions: {
-        title: 'Виявлені правопорушення по місяцям',
-      },
-      peopleData: [
-        ['ПІБ', 'Кількість виявлених порушень'],
-        ['п/п-к Неграш В.М.', 10],
-        ['м-р Вишневський С.М.', 7],
-        ['ст.л-нт Моторний О.В.', 4],
-        ['л-нт Крушевницька', 2],
-      ],
       peopleOptions: {
-        title: 'Кількість правопорушень людьми',
+        title: {
+          display: true,
+          text: 'Pie chart by violations founders',
+          fontSize: 25,
+        },
+      },
+      commitOptions: {
+        title: {
+          display: true,
+          text: 'Line chart by month',
+          fontSize: 25,
+        },
+        legend: {
+          display: false,
+        },
+        responsive: true,
+        lineTension: 1,
+        scales: {
+          yAxes: [{
+            ticks: {
+              beginAtZero: true,
+              padding: 25,
+            },
+          }],
+        },
       },
     };
   },
   mounted() {
     this.getViolations();
-    this.renderChart({
-      labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
-      datasets: [
-        {
-          label: 'GitHub Commits',
-          backgroundColor: '#f87979',
-          data: [40, 20, 12, 39, 10, 40, 39, 80, 40, 20, 12, 11],
-        },
-      ],
-    });
   },
   methods: {
     getViolations() {
@@ -71,36 +71,73 @@ export default {
       axios.get(path)
         .then((response) => {
           this.violations = response.data.data;
+          this.getViolData(this.violations);
         });
     },
-    getViolCount(viol) {
+    getViolData(viol) {
       let i;
       let k;
       let month = [];
+      let violMonth = [0,0,0,0,0,0,0,0,0,0,0,0];
+      let monthCount = [0,0];
       for (i = 1; i < 12; i += 1) {
         for (k = 0; k < viol.length; k += 1) {
-          //get month from date string
           month = parseInt(viol[k]['date'].split('.')[1], 10);
-          console.log(month);
-          if (month == i) {
-            this.viol_count[i] += 1;
+          if (month === i) {
+            violMonth[i-1] += 1;
           }
         }
       }
-      for (i = 0; i < 12; i += 1) {
-        console.log(this.viol_count[i]);
-      }
-    },
-    getNetworkData(viol) {
-      let k;
+      this.monthData = {
+        labels: ['Січень', 'Лютий', 'Березень', 'Квітень', 'Травень', 'Червень',
+          'Липень', 'Серпень', 'Вересень', 'Жовтень', 'Листопад', 'Грудень'],
+        datasets: [
+          {
+            label: 'Кількість порушень',
+            backgroundColor: [
+              'rgba(255, 99, 132, 0.8)',
+              'rgba(54, 162, 235, 0.8)',
+              'rgba(255, 206, 86, 0.8)',
+              'rgba(75, 192, 192, 0.8)',
+              'rgba(153, 102, 255, 0.8)',
+              'rgba(79, 110, 0, 0.8)',
+              'rgba(235, 219, 0, 0.8)',
+              'rgba(212, 134, 0, 0.8)',
+              'rgba(252, 93, 0, 0.8)',
+              'rgba(64, 118, 255, 0.8)',
+              'rgba(44, 33, 255, 0.8)',
+              'rgba(140, 0, 14, 0.8)',
+              ],
+            borderWidth:1,
+            borderColor: '#777',
+            hoverBorderWidth:3,
+            hoverBorderColor: '#000',
+            data: [violMonth[0],violMonth[1],violMonth[2],violMonth[3],violMonth[4],violMonth[5],
+            violMonth[6],violMonth[7],violMonth[8],violMonth[9],violMonth[10],violMonth[11]],
+          },
+        ],
+      };
       for (k = 0; k < viol.length; k += 1) {
-        if (viol[k]['network'] == 'АСУ-дніпро') {
-          this.month_count[0] += 1;
+        if (viol[k]['network'] === 'АСУ-дніпро') {
+          monthCount[0] += 1;
         }
-        if (viol[k]['network'] == 'ІСД-інтернет') {
-          this.month_count[1] += 1;
+        if (viol[k]['network'] === 'ІСД-інтернет') {
+          monthCount[1] += 1;
         }
       }
+      this.networkData = {
+        labels: ['АСУ-дніпро', 'ІСД-інтернет'],
+        datasets: [
+          {
+            label: 'Network',
+            backgroundColor: ['rgba(26, 56, 255, 0.8)', 'rgba(235, 219, 0, 0.8)'],
+            data: [monthCount[0], monthCount[1]],
+            borderWidth: 3,
+            hoverBorderWidth:3,
+            hoverBorderColor: '#000',
+          },
+        ],
+      };
     },
   },
 };

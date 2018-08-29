@@ -122,7 +122,6 @@ def delete_violation(data_index):
 #@jwt_required 
 def edit_violation(data_index):
     data = request.get_json()
-    data["date"] = datetime.strftime(datetime.strptime(request.json['date'],"%Y-%m-%d"), "%d.%m.%Y")
     if violations.find_one({"public_id" : data_index}):
         violations.update_one({"public_id" : data_index}, {'$set': {"date": data["date"],
             "whoFound": data["whoFound"], "network": data["network"],
@@ -139,7 +138,11 @@ def edit_violation(data_index):
 #@jwt_required 
 def add_violation():
     #convert time to dd.mm.yyyy format
-    date = datetime.strftime(datetime.strptime(request.json['date'],"%Y-%m-%d"), "%d.%m.%Y")
+    if request.json['date'] == '':
+        date = request.json['date']
+    else:
+        date = datetime.strftime(datetime.strptime(request.json['date'],"%Y-%m-%d"), "%d.%m.%Y")
+
     whoFound = request.json['whoFound']
     network = request.json['network']
     ipAdress = request.json['ipAdress']
