@@ -1,6 +1,6 @@
 <template>
   <div>
-      <h2 class="text-center m-2">Налаштування користувача {{ userName }}</h2>
+      <h2 class="text-center m-2">Налаштування бази даних</h2>
   </div>
 </template>
 

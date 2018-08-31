@@ -45,7 +45,7 @@
               body-text-variant="dark"
               footer-bg-variant="dark"
               footer-text-variant="light">
-              <b-container fluid>
+              <b-container>
                 <b-row class="mb-4 text-center">
                   <b-col sm="2">Хто виявив</b-col>
                   <b-col sm="4"><b-form-select
@@ -81,7 +81,7 @@
                     v-model="violation.department"
                     required>
                   </b-form-input></b-col>
-                  <b-col sm="2">Підпорядкування</b-col>
+                  <b-col sm="2">Підпорядк.</b-col>
                   <b-col sm="4"><b-form-input
                     type="text"
                     v-model="violation.subordinate">
@@ -418,12 +418,12 @@ export default {
         whoFound: { label: 'Хто виявив', sortable: true },
         network: { label: 'Мережа', sortable: true },
         ipAdress: { label: 'IP-адреса' },
-        department: { label: 'Підрозділ (порушник)', sortable: true },
+        //department: { label: 'Підрозділ (порушник)', sortable: true },
         militaryUnit: { label: 'в/ч', sortable: true },
         deslocation: { label: 'Розташування', sortable: true },
         subordinate: { label: 'Підпорядкування', sortable: true },
         normDoc: { label: 'Нормативний документ' },
-        violCont: { label: 'Зміст порушення' },
+        //violCont: { label: 'Зміст порушення' },
         volumeInf: { label: 'Обсяг інф (мб)' },
         sourceDoc: { label: '№ вих.' },
         incomeDoc: { label: '№ вх.' },
@@ -497,26 +497,32 @@ export default {
         incomeDoc: this.violation.incomeDoc,
       };
       axios.post('http://192.168.0.104:5000/violation_new', newViolation, {
-      });
-      this.violations.push(newViolation);
-      this.violationsCount += 1;
-      this.showAlert('Запис додано', 'success');
-      this.clearModal();
-      this.hideAddModal();
+      })
+        .then(() => {
+          this.violations.push(newViolation);
+          this.violationsCount += 1;
+          this.showAlert('Запис додано', 'success');
+          this.clearModal();
+          this.hideAddModal();
+        });
     },
     editViolation(publicId, violation) {
       const path = `http://192.168.0.104:5000/violation_edit/${publicId}`;
-      axios.put(path, violation);
-      this.showAlert(`Запис ${publicId} було редаговано`, 'warning');
-      this.hideEditModal();
+      axios.put(path, violation)
+        .then(() => {
+          this.showAlert(`Запис ${publicId} було редаговано`, 'warning');
+          this.hideEditModal();
+        });
     },
     removeViolation(publicId, violation) {
       const path = `http://192.168.0.104:5000/violation_delete/${publicId}`;
       this.showAlert(`Запис ${publicId} видалено`, 'danger');
-      axios.delete(path);
-      this.hideEditModal();
-      this.violations.pop(violation);
-      this.violationsCount -= 1;
+      axios.delete(path)
+        .then(() => {
+          this.hideEditModal();
+          this.violations.pop(violation);
+          this.violationsCount -= 1;
+        });
     },
     onFiltered(filteredItems) {
       this.totalRows = filteredItems.length;
@@ -549,7 +555,6 @@ export default {
   }
   .table tbody td {
     background-color:#f8f9fa;
-    color:black;
     vertical-align: middle;
     text-align:center;
   }

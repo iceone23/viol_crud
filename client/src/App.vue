@@ -25,11 +25,12 @@ export default {
 
 <style>
   #app {
-    background-color:#f8f9fa;
+    background-color:#ebebeb;
     margin-top: 60px;
   }
   body {
-    background-color:#f8f9fa;
+    font-family: 'Lato', sans-serif;
+    background-color:#ebebeb;
   }
   .nav {
     background-color:#f8f9fa;
